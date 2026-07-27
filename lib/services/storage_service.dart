@@ -60,6 +60,15 @@ class StorageService {
     return Invoice.fromJson(decodedMap);
   }
 
+  /// Flips the paid/unpaid state of a stored invoice and re-persists it.
+  static Future<Invoice?> setInvoicePaid(String invoiceId, bool isPaid) async {
+    final existing = await getInvoice(invoiceId);
+    if (existing == null) return null;
+    final updated = existing.copyWith(isPaid: isPaid);
+    await saveInvoice(updated);
+    return updated;
+  }
+
   /// Deletes a specific Invoice from storage.
   static Future<void> deleteInvoice(String invoiceId) async {
     final isar = _isar;

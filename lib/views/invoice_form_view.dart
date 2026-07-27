@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import '../models/models.dart';
 import '../providers/invoice_provider.dart';
+import '../providers/invoices_list_provider.dart';
 import '../services/pdf_service.dart';
+import '../services/storage_service.dart';
 
 class InvoiceFormView extends ConsumerStatefulWidget {
   const InvoiceFormView({super.key});
@@ -35,6 +37,40 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
     _mpesaNumberController.dispose();
     _mpesaAccountController.dispose();
     super.dispose();
+  }
+
+  void _clearFormFields() {
+    _clientNameController.clear();
+    _clientPhoneController.clear();
+    _clientPinController.clear();
+    _clientEmailController.clear();
+    _mpesaNumberController.clear();
+    _mpesaAccountController.clear();
+  }
+
+  Future<void> _saveInvoice(InvoiceState state) async {
+    try {
+      if (!StorageService.isInitialized) {
+        await StorageService.init();
+      }
+      await StorageService.saveInvoice(state.toInvoice());
+      // Keep the Dashboard/Invoices/Clients tabs in sync immediately.
+      ref.read(invoicesListProvider.notifier).refresh();
+      ref.read(invoiceProvider.notifier).reset();
+      _clearFormFields();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invoice saved. Find it under the Invoices tab.'),
+          backgroundColor: Color(0xFF10B981),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save invoice: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   void _showAddItemDialog() {
@@ -685,6 +721,21 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
               ),
             ),
             if (state.isValid) ...[
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () => _saveInvoice(state),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF005A36),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.save_outlined, size: 20),
+                label: const Text(
+                  'SAVE INVOICE',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1.0),
+                ),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [

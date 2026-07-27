@@ -11,6 +11,9 @@ enum VatCategory {
 /// Enum to specify the target M-Pesa receiving channel.
 enum MpesaType { tillNumber, paybill }
 
+/// Effective payment status of an invoice, derived from isPaid + dueDate.
+enum InvoiceStatus { paid, unpaid, overdue }
+
 // ==========================================
 // 1. PAYMENT DETAILS MODEL
 // ==========================================
@@ -182,6 +185,9 @@ class Invoice {
   final String? etimsInvoiceNumber;
   final bool isEtimsValidated;
 
+  /// Whether the client has settled this invoice. Defaults to false (unpaid) on creation.
+  final bool isPaid;
+
   Invoice({
     required this.id,
     required this.client,
@@ -191,7 +197,39 @@ class Invoice {
     required this.paymentDetails,
     this.etimsInvoiceNumber,
     this.isEtimsValidated = false,
+    this.isPaid = false,
   });
+
+  /// Derives the effective display status of the invoice.
+  InvoiceStatus get status {
+    if (isPaid) return InvoiceStatus.paid;
+    if (dueDate.isBefore(DateTime.now())) return InvoiceStatus.overdue;
+    return InvoiceStatus.unpaid;
+  }
+
+  Invoice copyWith({
+    String? id,
+    Client? client,
+    List<InvoiceItem>? items,
+    DateTime? issueDate,
+    DateTime? dueDate,
+    PaymentDetails? paymentDetails,
+    String? etimsInvoiceNumber,
+    bool? isEtimsValidated,
+    bool? isPaid,
+  }) {
+    return Invoice(
+      id: id ?? this.id,
+      client: client ?? this.client,
+      items: items ?? this.items,
+      issueDate: issueDate ?? this.issueDate,
+      dueDate: dueDate ?? this.dueDate,
+      paymentDetails: paymentDetails ?? this.paymentDetails,
+      etimsInvoiceNumber: etimsInvoiceNumber ?? this.etimsInvoiceNumber,
+      isEtimsValidated: isEtimsValidated ?? this.isEtimsValidated,
+      isPaid: isPaid ?? this.isPaid,
+    );
+  }
 
   /// Computes cumulative subtotal across all line items in KES
   double get totalSubtotal => items.fold(0.0, (sum, item) => sum + item.subtotal);
@@ -223,6 +261,7 @@ class Invoice {
       'paymentDetails': paymentDetails.toJson(),
       'etimsInvoiceNumber': etimsInvoiceNumber,
       'isEtimsValidated': isEtimsValidated,
+      'isPaid': isPaid,
     };
   }
 
@@ -238,6 +277,7 @@ class Invoice {
       paymentDetails: PaymentDetails.fromJson(json['paymentDetails'] as Map<String, dynamic>),
       etimsInvoiceNumber: json['etimsInvoiceNumber'] as String?,
       isEtimsValidated: json['isEtimsValidated'] as bool? ?? false,
+      isPaid: json['isPaid'] as bool? ?? false,
     );
   }
 }
