@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/invoices_list_provider.dart';
+import '../widgets/update_banner.dart';
 import 'clients_view.dart';
 import 'dashboard_view.dart';
 import 'invoice_form_view.dart';
@@ -41,9 +42,16 @@ class _MainTabViewState extends ConsumerState<MainTabView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _tabs,
+      body: Column(
+        children: [
+          SafeArea(bottom: false, child: UpdateBanner()),
+          Expanded(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _tabs,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,

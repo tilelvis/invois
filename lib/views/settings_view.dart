@@ -1,12 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/theme_provider.dart';
+import '../services/update_check_service.dart';
 
-class SettingsView extends ConsumerWidget {
+class SettingsView extends ConsumerStatefulWidget {
   const SettingsView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends ConsumerState<SettingsView> {
+  String _version = '—';
+  bool _checkingUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) setState(() => _version = '${info.version} (build ${info.buildNumber})');
+  }
+
+  Future<void> _checkForUpdate() async {
+    setState(() => _checkingUpdate = true);
+    final info = await PackageInfo.fromPlatform();
+    final currentBuild = int.tryParse(info.buildNumber) ?? 0;
+    final update = await UpdateCheckService.checkForUpdate(currentBuildNumber: currentBuild);
+    if (!mounted) return;
+    setState(() => _checkingUpdate = false);
+
+    if (update == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You're on the latest version.")),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('New version ${update.tag} available'),
+        action: SnackBarAction(
+          label: 'DOWNLOAD',
+          onPressed: () => launchUrl(
+            Uri.parse(update.apkDownloadUrl ?? update.releasePageUrl),
+            mode: LaunchMode.externalApplication,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;
 
@@ -34,10 +84,18 @@ class SettingsView extends ConsumerWidget {
             title: Text('Invois'),
             subtitle: Text('Kenya invoicing app for contractors & informal-sector businesses'),
           ),
-          const ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('Version'),
-            subtitle: Text('1.0.0+1'),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('Version'),
+            subtitle: Text(_version),
+          ),
+          ListTile(
+            leading: _checkingUpdate
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.system_update_outlined),
+            title: const Text('Check for updates'),
+            subtitle: const Text('Checks GitHub Releases for a newer build'),
+            onTap: _checkingUpdate ? null : _checkForUpdate,
           ),
         ],
       ),

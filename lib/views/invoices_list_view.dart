@@ -172,7 +172,7 @@ class _InvoicesListViewState extends ConsumerState<InvoicesListView> {
                             context: context,
                             invoice: invoice,
                             onTogglePaid: (paid) => ref.read(invoicesListProvider.notifier).togglePaid(invoice.id, paid),
-                            onDelete: () => _deleteWithUndo(context, invoice),
+                            onDelete: () async => _deleteWithUndo(context, invoice),
                           ),
                           title: Text(invoice.client.fullName, style: const TextStyle(fontWeight: FontWeight.w600)),
                           subtitle: Text(
