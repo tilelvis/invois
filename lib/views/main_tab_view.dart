@@ -17,13 +17,17 @@ class MainTabView extends ConsumerStatefulWidget {
 class _MainTabViewState extends ConsumerState<MainTabView> {
   int _currentIndex = 0;
 
-  static const _tabs = [
-    DashboardView(),
-    InvoicesListView(),
-    InvoiceFormView(),
-    ClientsView(),
-    SettingsView(),
-  ];
+  List<Widget> get _tabs => [
+        DashboardView(
+          onGoToNewInvoice: () => _onTabTapped(2),
+          onGoToInvoices: () => _onTabTapped(1),
+          onGoToClients: () => _onTabTapped(3),
+        ),
+        const InvoicesListView(),
+        const InvoiceFormView(),
+        const ClientsView(),
+        const SettingsView(),
+      ];
 
   void _onTabTapped(int index) {
     // Refresh persisted data whenever the user leaves the "New" invoice tab,

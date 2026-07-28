@@ -4,6 +4,7 @@ import 'package:printing/printing.dart';
 import '../models/models.dart';
 import '../providers/invoices_list_provider.dart';
 import '../services/pdf_service.dart';
+import '../widgets/invoice_timeline.dart';
 import '../widgets/status_badge.dart';
 
 class InvoiceDetailView extends ConsumerWidget {
@@ -49,8 +50,29 @@ class InvoiceDetailView extends ConsumerWidget {
           const Divider(height: 32),
           _row('Subtotal', currency.format(invoice.totalSubtotal)),
           _row('VAT', currency.format(invoice.totalVat)),
-          _row('Grand total', currency.format(invoice.grandTotal), bold: true),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Grand total', style: TextStyle(color: Colors.black54)),
+                Hero(
+                  tag: 'invoice-amount-${invoice.id}',
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Text(
+                      currency.format(invoice.grandTotal),
+                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 24),
+          const Text('Timeline', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const SizedBox(height: 12),
+          InvoiceTimeline(invoice: invoice),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: const Text('Mark as paid'),

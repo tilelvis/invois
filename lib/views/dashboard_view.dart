@@ -4,9 +4,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../models/models.dart';
 import '../providers/invoices_list_provider.dart';
+import '../widgets/animated_counter.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/expandable_fab.dart';
+import '../widgets/shimmer_loading.dart';
 
 class DashboardView extends ConsumerWidget {
-  const DashboardView({super.key});
+  final VoidCallback? onGoToNewInvoice;
+  final VoidCallback? onGoToInvoices;
+  final VoidCallback? onGoToClients;
+
+  const DashboardView({
+    super.key,
+    this.onGoToNewInvoice,
+    this.onGoToInvoices,
+    this.onGoToClients,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,10 +28,17 @@ class DashboardView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
+      floatingActionButton: ExpandableFab(
+        actions: [
+          ExpandableFabAction(icon: Icons.receipt_long, label: 'New Invoice', onTap: () => onGoToNewInvoice?.call()),
+          ExpandableFabAction(icon: Icons.list_alt, label: 'View Invoices', onTap: () => onGoToInvoices?.call()),
+          ExpandableFabAction(icon: Icons.people, label: 'Clients', onTap: () => onGoToClients?.call()),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(invoicesListProvider.notifier).refresh(),
         child: invoicesAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const DashboardSkeleton(),
           error: (err, _) => ListView(
             children: [
               const SizedBox(height: 120),
@@ -28,17 +48,14 @@ class DashboardView extends ConsumerWidget {
           data: (invoices) {
             if (invoices.isEmpty) {
               return ListView(
-                children: const [
-                  SizedBox(height: 120),
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 32),
-                      child: Text(
-                        'No invoices yet. Create your first invoice from the New tab to see stats here.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    ),
+                children: [
+                  const SizedBox(height: 80),
+                  EmptyStateView(
+                    icon: Icons.insert_chart_outlined,
+                    title: 'Nothing to show yet',
+                    message: 'Create your first invoice to see earnings stats and trends here.',
+                    actionLabel: 'New Invoice',
+                    onAction: onGoToNewInvoice,
                   ),
                 ],
               );
@@ -64,7 +81,8 @@ class DashboardView extends ConsumerWidget {
                     Expanded(
                       child: _StatCard(
                         label: 'Collected',
-                        value: currency.format(totalRevenue),
+                        value: totalRevenue,
+                        formatter: currency.format,
                         color: const Color(0xFF10B981),
                         icon: Icons.check_circle,
                       ),
@@ -73,7 +91,8 @@ class DashboardView extends ConsumerWidget {
                     Expanded(
                       child: _StatCard(
                         label: 'Outstanding',
-                        value: currency.format(outstanding),
+                        value: outstanding,
+                        formatter: currency.format,
                         color: const Color(0xFFF59E0B),
                         icon: Icons.hourglass_bottom,
                       ),
@@ -185,10 +204,17 @@ class _RevenueBarChart extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   final String label;
-  final String value;
+  final double value;
+  final String Function(double) formatter;
   final Color color;
   final IconData icon;
-  const _StatCard({required this.label, required this.value, required this.color, required this.icon});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.formatter,
+    required this.color,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -206,10 +232,10 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54)),
           const SizedBox(height: 4),
-          Text(
-            value,
+          AnimatedCounterText(
+            value: value,
+            formatter: formatter,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color),
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -233,7 +259,10 @@ class _CountPill extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text('$count', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: color)),
+          AnimatedCounterInt(
+            value: count,
+            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: color),
+          ),
           Text(label, style: TextStyle(fontSize: 11, color: color)),
         ],
       ),

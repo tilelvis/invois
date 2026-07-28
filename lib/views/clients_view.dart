@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/invoices_list_provider.dart';
 import '../services/pdf_service.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/shimmer_loading.dart';
 import '../widgets/status_badge.dart';
 import 'invoice_detail_view.dart';
 
@@ -16,7 +18,7 @@ class ClientsView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Clients')),
       body: invoicesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const InvoiceListSkeleton(),
         error: (err, _) => Center(child: Text('Could not load clients: $err')),
         data: (invoices) {
           // Group invoices by client phone number (unique per client).
@@ -26,15 +28,10 @@ class ClientsView extends ConsumerWidget {
           }
 
           if (byClient.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32),
-                child: Text(
-                  'No clients yet. Clients appear here once you save an invoice for them.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.black54),
-                ),
-              ),
+            return const EmptyStateView(
+              icon: Icons.people_outline,
+              title: 'No clients yet',
+              message: 'Clients appear here once you save an invoice for them.',
             );
           }
 

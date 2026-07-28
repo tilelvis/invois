@@ -23,6 +23,8 @@ dependencies:
   uuid: ^4.3.3
   fl_chart: ^0.68.0
   shared_preferences: ^2.2.3
+  shimmer: ^3.0.0
+  dynamic_color: ^1.7.0
 
 dev_dependencies:
   flutter_test:

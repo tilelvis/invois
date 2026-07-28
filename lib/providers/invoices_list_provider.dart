@@ -33,6 +33,12 @@ class InvoicesListNotifier extends StateNotifier<AsyncValue<List<Invoice>>> {
     await StorageService.deleteInvoice(invoiceId);
     await refresh();
   }
+
+  /// Re-saves a previously deleted invoice (used for "Undo" after a swipe-delete).
+  Future<void> restore(Invoice invoice) async {
+    await StorageService.saveInvoice(invoice);
+    await refresh();
+  }
 }
 
 final invoicesListProvider =
