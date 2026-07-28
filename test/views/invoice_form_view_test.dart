@@ -13,15 +13,16 @@ void main() {
       ),
     );
 
-    // Verify app title loads
-    expect(find.text('JULES KENYA INVOICER'), findsOneWidget);
+    // Verify rebranded app title loads
+    expect(find.text('INVOIS KENYA'), findsOneWidget);
 
-    // Verify initial empty states
-    expect(find.text('No Client Info Added'), findsOneWidget);
-    expect(find.text('No Payment Channels Saved'), findsOneWidget);
-    expect(find.text('No services, labor hours, or materials added.'), findsOneWidget);
+    // Verify Step 1 inline cards load
+    expect(find.text('Customer Profile'), findsOneWidget);
+    expect(find.text('Lipa Na M-Pesa Gateway'), findsOneWidget);
 
-    // Verify grand total displays 0.00
-    expect(find.textContaining('KES 0.00'), findsWidgets);
+    // Verify key fields exist in Step 1
+    expect(find.textContaining('Customer Full Name'), findsWidgets);
+    expect(find.textContaining('Kenyan Phone'), findsWidgets);
+    expect(find.textContaining('Business Till Number'), findsWidgets);
   });
 }
