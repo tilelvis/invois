@@ -70,6 +70,7 @@ class MyApp extends ConsumerWidget {
               error: darkDynamic?.error ?? AppColors.danger(Brightness.dark),
             ),
             cardTheme: const CardThemeData(
+              color: AppColors.darkSurface,
               surfaceTintColor: Colors.transparent,
             ),
             inputDecorationTheme: inputTheme.copyWith(

@@ -220,6 +220,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -232,7 +233,7 @@ class _StatCard extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 22),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+          Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondary(brightness))),
           const SizedBox(height: 4),
           AnimatedCounterText(
             value: value,

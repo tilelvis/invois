@@ -43,7 +43,7 @@ class InvoiceDetailView extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(invoice.client.phoneNumber, style: const TextStyle(color: Colors.black54)),
+          Text(invoice.client.phoneNumber, style: TextStyle(color: AppColors.textSecondary(Theme.of(context).brightness))),
           const SizedBox(height: 16),
           _row(context, 'Issue date', dateFmt.format(invoice.issueDate)),
           _row(context, 'Due date', dateFmt.format(invoice.dueDate)),
@@ -56,7 +56,7 @@ class InvoiceDetailView extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Grand total', style: TextStyle(color: Colors.black54)),
+                Text('Grand total', style: TextStyle(color: AppColors.textSecondary(Theme.of(context).brightness))),
                 Hero(
                   tag: 'invoice-amount-${invoice.id}',
                   child: Material(

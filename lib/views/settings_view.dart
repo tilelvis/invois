@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/theme_provider.dart';
 import '../services/update_check_service.dart';
+import '../widgets/app_design_system.dart';
 
 class SettingsView extends ConsumerStatefulWidget {
   const SettingsView({super.key});
@@ -64,9 +65,9 @@ class _SettingsViewState extends ConsumerState<SettingsView> {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
-            child: Text('APPEARANCE', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black45, fontSize: 12)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+            child: Text('APPEARANCE', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary(Theme.of(context).brightness), fontSize: 12)),
           ),
           SwitchListTile(
             title: const Text('Dark mode'),
@@ -75,9 +76,9 @@ class _SettingsViewState extends ConsumerState<SettingsView> {
             onChanged: (value) => ref.read(themeModeProvider.notifier).toggle(value),
           ),
           const Divider(),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text('ABOUT', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black45, fontSize: 12)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Text('ABOUT', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary(Theme.of(context).brightness), fontSize: 12)),
           ),
           const ListTile(
             leading: Icon(Icons.receipt_long),
