@@ -1,0 +1,53 @@
+name: Build & Check
+
+# Ordinary development workflow: every push to main (and every PR into it)
+# gets analyzed, tested, and built as a plain artifact. This never creates
+# a GitHub Release — that only happens from release.yml, triggered by
+# pushing a "v*" tag. See .github/scripts/suggest-version.sh for how the
+# version-bump suggestion below is computed.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, needed to diff against the last tag
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: invois-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Suggest next version
+        if: always()
+        run: bash .github/scripts/suggest-version.sh
