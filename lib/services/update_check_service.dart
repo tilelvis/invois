@@ -8,17 +8,18 @@ class UpdateInfo {
   UpdateInfo({required this.tag, required this.releasePageUrl, this.apkDownloadUrl});
 }
 
-/// Checks GitHub Releases for a newer build than what's currently installed.
+/// Checks GitHub Releases for a newer version than what's currently installed.
 ///
-/// Works with the build-apk.yml workflow, which tags each release as
-/// "v<versionName>-buildN" and attaches the APK — this compares N (the
-/// GitHub Actions run number, always increasing) against the running app's
-/// build number (from PackageInfo).
+/// Works with release.yml, which only tags an official release as
+/// "vMAJOR.MINOR.PATCH" (matching pubspec.yaml's version name) when that
+/// tag is pushed — see the repo's `.github/workflows/release.yml`.
+/// This compares the release tag against the running app's own version
+/// name (from PackageInfo.version) using plain semantic-version comparison.
 class UpdateCheckService {
   /// IMPORTANT: replace with your actual "owner/repo", e.g. "jkamau/invois".
   static const String repoSlug = 'tilelvis/invois';
 
-  static Future<UpdateInfo?> checkForUpdate({required int currentBuildNumber}) async {
+  static Future<UpdateInfo?> checkForUpdate({required String currentVersion}) async {
     if (repoSlug.startsWith('YOUR_GITHUB_USERNAME')) {
       // Not configured yet — silently skip rather than error out.
       return null;
@@ -35,10 +36,8 @@ class UpdateCheckService {
       final htmlUrl = data['html_url'] as String?;
       if (tagName == null || htmlUrl == null) return null;
 
-      final match = RegExp(r'build(\d+)').firstMatch(tagName);
-      if (match == null) return null;
-      final latestBuildNumber = int.tryParse(match.group(1)!);
-      if (latestBuildNumber == null || latestBuildNumber <= currentBuildNumber) return null;
+      final latestVersion = tagName.startsWith('v') ? tagName.substring(1) : tagName;
+      if (!_isNewer(latestVersion, currentVersion)) return null;
 
       String? apkUrl;
       final assets = data['assets'] as List<dynamic>?;
@@ -58,5 +57,22 @@ class UpdateCheckService {
       // to have" check, not something that should ever block app usage.
       return null;
     }
+  }
+
+  /// Compares two "MAJOR.MINOR.PATCH"-style version strings. Returns true
+  /// if [candidate] is strictly newer than [current]. Malformed or missing
+  /// parts are treated as 0, so this never throws on unexpected input.
+  static bool _isNewer(String candidate, String current) {
+    final c = _parseVersion(candidate);
+    final b = _parseVersion(current);
+    for (var i = 0; i < 3; i++) {
+      if (c[i] != b[i]) return c[i] > b[i];
+    }
+    return false;
+  }
+
+  static List<int> _parseVersion(String version) {
+    final parts = version.split('.');
+    return List.generate(3, (i) => i < parts.length ? (int.tryParse(parts[i]) ?? 0) : 0);
   }
 }

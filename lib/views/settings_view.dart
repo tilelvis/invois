@@ -31,8 +31,7 @@ class _SettingsViewState extends ConsumerState<SettingsView> {
   Future<void> _checkForUpdate() async {
     setState(() => _checkingUpdate = true);
     final info = await PackageInfo.fromPlatform();
-    final currentBuild = int.tryParse(info.buildNumber) ?? 0;
-    final update = await UpdateCheckService.checkForUpdate(currentBuildNumber: currentBuild);
+    final update = await UpdateCheckService.checkForUpdate(currentVersion: info.version);
     if (!mounted) return;
     setState(() => _checkingUpdate = false);
 

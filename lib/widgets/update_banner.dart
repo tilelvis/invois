@@ -31,8 +31,7 @@ class _UpdateBannerState extends State<UpdateBanner> {
   Future<void> _check() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      final currentBuild = int.tryParse(info.buildNumber) ?? 0;
-      final update = await UpdateCheckService.checkForUpdate(currentBuildNumber: currentBuild);
+      final update = await UpdateCheckService.checkForUpdate(currentVersion: info.version);
 
       if (update != null) {
         final prefs = await SharedPreferences.getInstance();

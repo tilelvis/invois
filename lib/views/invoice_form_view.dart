@@ -1210,7 +1210,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
               const SizedBox(height: AppSpacing.md),
 
               DropdownButtonFormField<VatCategory>(
-                value: _vatCategory,
+                initialValue: _vatCategory,
                 items: const [
                   DropdownMenuItem(value: VatCategory.exempt, child: Text('Exempt (0% VAT)')),
                   DropdownMenuItem(value: VatCategory.standard16, child: Text('Standard VAT (16%)')),
