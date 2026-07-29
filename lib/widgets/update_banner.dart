@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/update_check_service.dart';
+import 'app_design_system.dart';
 
 const _dismissedTagPrefsKey = 'invois_dismissed_update_tag';
 
@@ -66,7 +67,7 @@ class _UpdateBannerState extends State<UpdateBanner> {
     if (!_checked || _update == null) return const SizedBox.shrink();
 
     return Material(
-      color: const Color(0xFF005A36),
+      color: AppColors.primary,
       child: InkWell(
         onTap: () => launchUrl(
           Uri.parse(_update!.apkDownloadUrl ?? _update!.releasePageUrl),

@@ -235,6 +235,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
   Widget build(BuildContext context) {
     final invoiceState = ref.watch(invoiceProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final brightness = Theme.of(context).brightness;
 
     if (_invoiceSavedSuccessfully) {
       return SuccessScreen(
@@ -365,7 +366,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+            side: BorderSide(color: AppColors.border(brightness)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -459,7 +460,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+            side: BorderSide(color: AppColors.border(brightness)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -603,7 +604,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
             elevation: 1,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+              side: BorderSide(color: AppColors.border(brightness)),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 48, horizontal: AppSpacing.lg),
@@ -667,13 +668,18 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
                 elevation: 1,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.md),
-                  side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+                  side: BorderSide(color: AppColors.border(brightness)),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                   leading: CircleAvatar(
-                    backgroundColor: isLabor ? Colors.orange.withValues(alpha: 0.1) : Colors.blue.withValues(alpha: 0.1),
-                    foregroundColor: isLabor ? Colors.orange[800] : Colors.blue[800],
+                    backgroundColor: (isLabor
+                            ? AppColors.laborAccent(brightness)
+                            : AppColors.materialAccent(brightness))
+                        .withValues(alpha: 0.12),
+                    foregroundColor: isLabor
+                        ? AppColors.laborAccent(brightness)
+                        : AppColors.materialAccent(brightness),
                     child: Icon(isLabor ? Icons.engineering_outlined : Icons.construction_outlined),
                   ),
                   title: Text(
@@ -738,7 +744,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
             elevation: 1,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+              side: BorderSide(color: AppColors.border(brightness)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -776,7 +782,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
             elevation: 1,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+              side: BorderSide(color: AppColors.border(brightness)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -809,7 +815,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
           elevation: 1,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+            side: BorderSide(color: AppColors.border(brightness)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -874,7 +880,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
                     const Text('INVOICE REF:', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
                     Text(
                       state.id,
-                      style: const TextStyle(color: Colors.yellow, fontWeight: FontWeight.w900, letterSpacing: 1.0),
+                      style: TextStyle(color: AppColors.warning(Brightness.dark), fontWeight: FontWeight.w900, letterSpacing: 1.0),
                     ),
                   ],
                 ),
@@ -904,7 +910,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
                     ),
                     Text(
                       currencyFormatter.format(state.grandTotal),
-                      style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w900, fontSize: 20),
+                      style: const TextStyle(color: AppColors.brandAccent, fontWeight: FontWeight.w900, fontSize: 20),
                     ),
                   ],
                 ),
@@ -913,11 +919,11 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.verified, color: Colors.greenAccent, size: 18),
-                          SizedBox(width: 4),
-                          Text('eTIMS COMPLIANT', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.w900, fontSize: 12)),
+                          Icon(Icons.verified, color: AppColors.success(Brightness.dark), size: 18),
+                          const SizedBox(width: 4),
+                          Text('eTIMS COMPLIANT', style: TextStyle(color: AppColors.success(Brightness.dark), fontWeight: FontWeight.w900, fontSize: 12)),
                         ],
                       ),
                       Text(
@@ -937,7 +943,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
         ElevatedButton.icon(
           onPressed: () => _simulateMpesaStkPush(state),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.secondary,
+            backgroundColor: AppColors.brandAccent,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
@@ -967,6 +973,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
     final isFirstStep = _currentStep == 0;
     final isLastStep = _currentStep == 2;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final brightness = Theme.of(context).brightness;
 
     // Navigation controller enabled/disabled flags
     final bool isNextEnabled = _currentStep == 0
@@ -981,7 +988,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
         color: isDark ? AppColors.darkSurface : Colors.white,
         border: Border(
           top: BorderSide(
-            color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+            color: AppColors.border(brightness),
             width: 1,
           ),
         ),
@@ -1011,7 +1018,7 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              disabledBackgroundColor: Colors.grey[400],
+              disabledBackgroundColor: AppColors.slate400,
             ),
             icon: Icon(isLastStep ? Icons.check_circle_outline : Icons.arrow_forward),
             label: Text(
@@ -1078,6 +1085,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final brightness = Theme.of(context).brightness;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -1094,7 +1102,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: AppColors.slate400,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1224,11 +1232,11 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
 
               // Live Real-Time Calculation Preview Card
               Card(
-                color: isDark ? AppColors.darkBg : Colors.grey[50],
+                color: AppColors.surfaceVariant(brightness),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.md),
-                  side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+                  side: BorderSide(color: AppColors.border(brightness)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.md),
@@ -1237,7 +1245,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Subtotal:', style: TextStyle(color: Colors.grey)),
+                          Text('Subtotal:', style: TextStyle(color: AppColors.textSecondary(brightness))),
                           Text(currencyFormatter.format(_subtotal), style: const TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
@@ -1245,7 +1253,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('KRA VAT Preview:', style: TextStyle(color: Colors.grey)),
+                          Text('KRA VAT Preview:', style: TextStyle(color: AppColors.textSecondary(brightness))),
                           Text(currencyFormatter.format(_vatPreview), style: const TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
@@ -1376,16 +1384,16 @@ class _MpesaSimulationSheetState extends State<MpesaSimulationSheet> {
               children: [
                 const Text(
                   'LIPA NA M-PESA GATEWAY',
-                  style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w900, letterSpacing: 1.2, fontSize: 16),
+                  style: TextStyle(color: AppColors.brandAccent, fontWeight: FontWeight.w900, letterSpacing: 1.2, fontSize: 16),
                 ),
                 if (_step < 4)
                   const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.secondary),
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandAccent),
                   )
                 else
-                  const Icon(Icons.check_circle, color: AppColors.secondary, size: 24),
+                  const Icon(Icons.check_circle, color: AppColors.brandAccent, size: 24),
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -1409,7 +1417,7 @@ class _MpesaSimulationSheetState extends State<MpesaSimulationSheet> {
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
+                  backgroundColor: AppColors.brandAccent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
@@ -1436,10 +1444,10 @@ class _MpesaSimulationSheetState extends State<MpesaSimulationSheet> {
                 height: 28,
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? AppColors.secondary
+                      ? AppColors.success(Brightness.dark)
                       : isActive
-                          ? Colors.amber
-                          : Colors.grey[700],
+                          ? AppColors.warning(Brightness.dark)
+                          : AppColors.slate700,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -1459,7 +1467,7 @@ class _MpesaSimulationSheetState extends State<MpesaSimulationSheet> {
                 Expanded(
                   child: Container(
                     height: 3,
-                    color: isCompleted ? AppColors.secondary : Colors.grey[700],
+                    color: isCompleted ? AppColors.success(Brightness.dark) : AppColors.slate700,
                   ),
                 ),
             ],
@@ -1516,12 +1524,10 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
       _particles.add(ConfettiParticle(
         color: [
           AppColors.primary,
-          AppColors.secondary,
-          Colors.orange,
-          Colors.pinkAccent,
-          Colors.cyan,
-          Colors.yellow
-        ][random.nextInt(6)],
+          AppColors.brandAccent,
+          AppColors.warning(Brightness.light),
+          AppColors.success(Brightness.dark),
+        ][random.nextInt(4)],
         x: 0.5,
         y: 0.4,
         vx: (random.nextDouble() - 0.5) * 12,
@@ -1571,7 +1577,7 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
                       width: 100,
                       height: 100,
                       decoration: const BoxDecoration(
-                        color: AppColors.secondary,
+                        color: AppColors.brandAccent,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -1588,10 +1594,10 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
                     style: AppTypography.headerStyle.copyWith(color: AppColors.primary, fontSize: 24),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  const Text(
+                  Text(
                     'Your invoice has been saved and is ready to share.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(fontSize: 14, color: AppColors.textSecondary(Theme.of(context).brightness)),
                   ),
                   const Spacer(),
 
@@ -1612,7 +1618,7 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
                   ElevatedButton.icon(
                     onPressed: widget.onShare,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
+                      backgroundColor: AppColors.brandAccent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
@@ -1641,8 +1647,8 @@ class _SuccessScreenState extends State<SuccessScreen> with SingleTickerProvider
                         child: ElevatedButton(
                           onPressed: widget.onDashboard,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[200],
-                            foregroundColor: Colors.black,
+                            backgroundColor: AppColors.surfaceVariant(Theme.of(context).brightness),
+                            foregroundColor: AppColors.textPrimary(Theme.of(context).brightness),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/pdf_service.dart';
+import 'app_design_system.dart';
 
 /// Vertical timeline showing Issued -> Due -> Paid/Overdue progression
 /// for a single invoice.
@@ -10,6 +11,7 @@ class InvoiceTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final isPaid = invoice.status == InvoiceStatus.paid;
     final isOverdue = invoice.status == InvoiceStatus.overdue;
     final dateFmt = PdfService.dateFormatter;
@@ -19,31 +21,33 @@ class InvoiceTimeline extends StatelessWidget {
         label: 'Issued',
         date: dateFmt.format(invoice.issueDate),
         isComplete: true,
-        color: const Color(0xFF005A36),
+        color: AppColors.primary,
       ),
       _TimelineStep(
         label: isOverdue ? 'Due (overdue)' : 'Due',
         date: dateFmt.format(invoice.dueDate),
         isComplete: isPaid || isOverdue,
-        color: isOverdue ? Colors.red[700]! : const Color(0xFF005A36),
+        color: isOverdue ? AppColors.danger(brightness) : AppColors.primary,
       ),
       _TimelineStep(
         label: isPaid ? 'Paid' : 'Awaiting payment',
         date: isPaid ? 'Settled' : '—',
         isComplete: isPaid,
-        color: const Color(0xFF10B981),
+        color: AppColors.success(brightness),
       ),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (int i = 0; i < steps.length; i++) _buildRow(steps[i], isLast: i == steps.length - 1),
+        for (int i = 0; i < steps.length; i++)
+          _buildRow(context, steps[i], isLast: i == steps.length - 1),
       ],
     );
   }
 
-  Widget _buildRow(_TimelineStep step, {required bool isLast}) {
+  Widget _buildRow(BuildContext context, _TimelineStep step, {required bool isLast}) {
+    final brightness = Theme.of(context).brightness;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +70,7 @@ class InvoiceTimeline extends StatelessWidget {
                 Expanded(
                   child: Container(
                     width: 2,
-                    color: step.isComplete ? step.color : Colors.grey[300],
+                    color: step.isComplete ? step.color : AppColors.border(brightness),
                   ),
                 ),
             ],
@@ -79,7 +83,10 @@ class InvoiceTimeline extends StatelessWidget {
               children: [
                 Text(step.label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                 const SizedBox(height: 2),
-                Text(step.date, style: const TextStyle(color: Colors.black54, fontSize: 12)),
+                Text(
+                  step.date,
+                  style: TextStyle(color: AppColors.textSecondary(brightness), fontSize: 12),
+                ),
               ],
             ),
           ),

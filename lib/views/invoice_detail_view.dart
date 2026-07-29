@@ -4,6 +4,7 @@ import 'package:printing/printing.dart';
 import '../models/models.dart';
 import '../providers/invoices_list_provider.dart';
 import '../services/pdf_service.dart';
+import '../widgets/app_design_system.dart';
 import '../widgets/invoice_timeline.dart';
 import '../widgets/status_badge.dart';
 
@@ -44,12 +45,12 @@ class InvoiceDetailView extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(invoice.client.phoneNumber, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 16),
-          _row('Issue date', dateFmt.format(invoice.issueDate)),
-          _row('Due date', dateFmt.format(invoice.dueDate)),
-          _row('Items', '${invoice.items.length}'),
+          _row(context, 'Issue date', dateFmt.format(invoice.issueDate)),
+          _row(context, 'Due date', dateFmt.format(invoice.dueDate)),
+          _row(context, 'Items', '${invoice.items.length}'),
           const Divider(height: 32),
-          _row('Subtotal', currency.format(invoice.totalSubtotal)),
-          _row('VAT', currency.format(invoice.totalVat)),
+          _row(context, 'Subtotal', currency.format(invoice.totalSubtotal)),
+          _row(context, 'VAT', currency.format(invoice.totalVat)),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(
@@ -103,7 +104,7 @@ class InvoiceDetailView extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandAccent),
                   onPressed: () => PdfService.shareInvoiceToWhatsapp(invoice),
                   icon: const Icon(Icons.share, color: Colors.white),
                   label: const Text('WhatsApp', style: TextStyle(color: Colors.white)),
@@ -116,13 +117,13 @@ class InvoiceDetailView extends ConsumerWidget {
     );
   }
 
-  Widget _row(String label, String value, {bool bold = false}) {
+  Widget _row(BuildContext context, String label, String value, {bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.black54)),
+          Text(label, style: TextStyle(color: AppColors.textSecondary(Theme.of(context).brightness))),
           Text(
             value,
             style: TextStyle(fontWeight: bold ? FontWeight.w900 : FontWeight.w500, fontSize: bold ? 16 : 14),
@@ -133,6 +134,7 @@ class InvoiceDetailView extends ConsumerWidget {
   }
 
   void _confirmDelete(BuildContext context, WidgetRef ref) {
+    final danger = AppColors.danger(Theme.of(context).brightness);
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -146,7 +148,7 @@ class InvoiceDetailView extends ConsumerWidget {
               await ref.read(invoicesListProvider.notifier).delete(invoice.id);
               if (context.mounted) Navigator.pop(context);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: danger)),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import 'app_design_system.dart';
 
 class StatusBadge extends StatelessWidget {
   final InvoiceStatus status;
@@ -7,19 +8,20 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     late Color color;
     late String label;
     switch (status) {
       case InvoiceStatus.paid:
-        color = const Color(0xFF10B981);
+        color = AppColors.success(brightness);
         label = 'PAID';
         break;
       case InvoiceStatus.unpaid:
-        color = const Color(0xFFF59E0B);
+        color = AppColors.warning(brightness);
         label = 'UNPAID';
         break;
       case InvoiceStatus.overdue:
-        color = Colors.red[700]!;
+        color = AppColors.danger(brightness);
         label = 'OVERDUE';
         break;
     }

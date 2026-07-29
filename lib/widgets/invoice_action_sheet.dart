@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import '../models/models.dart';
 import '../services/pdf_service.dart';
+import 'app_design_system.dart';
 
 /// Shows a slide-up sheet of quick actions for an invoice
 /// (share, toggle paid, delete) without leaving the current list.
@@ -18,6 +19,7 @@ Future<void> showInvoiceActionSheet({
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (sheetContext) {
+      final danger = AppColors.danger(Theme.of(sheetContext).brightness);
       return SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -26,7 +28,7 @@ Future<void> showInvoiceActionSheet({
             Container(
               width: 40,
               height: 4,
-              decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(4)),
+              decoration: BoxDecoration(color: AppColors.slate400, borderRadius: BorderRadius.circular(4)),
             ),
             ListTile(
               title: Text(invoice.client.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -59,8 +61,8 @@ Future<void> showInvoiceActionSheet({
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('Delete', style: TextStyle(color: Colors.red)),
+              leading: Icon(Icons.delete_outline, color: danger),
+              title: Text('Delete', style: TextStyle(color: danger)),
               onTap: () async {
                 Navigator.pop(sheetContext);
                 await onDelete();

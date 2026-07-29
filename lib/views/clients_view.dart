@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/invoices_list_provider.dart';
 import '../services/pdf_service.dart';
+import '../widgets/app_design_system.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/shimmer_loading.dart';
 import '../widgets/status_badge.dart';
@@ -51,7 +52,7 @@ class ClientsView extends ConsumerWidget {
 
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: const Color(0xFF005A36),
+                  backgroundColor: AppColors.primary,
                   child: Text(
                     client.fullName.isNotEmpty ? client.fullName[0].toUpperCase() : '?',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -66,7 +67,10 @@ class ClientsView extends ConsumerWidget {
                     Text(PdfService.currencyFormatter.format(totalBilled),
                         style: const TextStyle(fontWeight: FontWeight.bold)),
                     if (outstandingCount > 0)
-                      Text('$outstandingCount unpaid', style: TextStyle(fontSize: 11, color: Colors.red[700])),
+                      Text(
+                        '$outstandingCount unpaid',
+                        style: TextStyle(fontSize: 11, color: AppColors.danger(Theme.of(context).brightness)),
+                      ),
                   ],
                 ),
                 onTap: () => Navigator.push(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'app_design_system.dart';
 
 /// Wraps shimmer skeletons with theme-aware base/highlight colors.
 class ShimmerBox extends StatelessWidget {
@@ -36,8 +37,8 @@ class InvoiceListSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Shimmer.fromColors(
-      baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-      highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
+      baseColor: isDark ? AppColors.slate800 : AppColors.slate200,
+      highlightColor: isDark ? AppColors.slate700 : AppColors.slate100,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: 6,
@@ -80,8 +81,8 @@ class DashboardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Shimmer.fromColors(
-      baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-      highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
+      baseColor: isDark ? AppColors.slate800 : AppColors.slate200,
+      highlightColor: isDark ? AppColors.slate700 : AppColors.slate100,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

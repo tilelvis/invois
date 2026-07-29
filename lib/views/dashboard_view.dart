@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../models/models.dart';
 import '../providers/invoices_list_provider.dart';
 import '../widgets/animated_counter.dart';
+import '../widgets/app_design_system.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/expandable_fab.dart';
 import '../widgets/shimmer_loading.dart';
@@ -72,6 +73,7 @@ class DashboardView extends ConsumerWidget {
             final overdueCount = invoices.where((i) => i.status == InvoiceStatus.overdue).length;
 
             final monthlyTotals = _monthlyRevenue(invoices);
+            final brightness = Theme.of(context).brightness;
 
             return ListView(
               padding: const EdgeInsets.all(16),
@@ -83,7 +85,7 @@ class DashboardView extends ConsumerWidget {
                         label: 'Collected',
                         value: totalRevenue,
                         formatter: currency.format,
-                        color: const Color(0xFF10B981),
+                        color: AppColors.success(brightness),
                         icon: Icons.check_circle,
                       ),
                     ),
@@ -93,7 +95,7 @@ class DashboardView extends ConsumerWidget {
                         label: 'Outstanding',
                         value: outstanding,
                         formatter: currency.format,
-                        color: const Color(0xFFF59E0B),
+                        color: AppColors.warning(brightness),
                         icon: Icons.hourglass_bottom,
                       ),
                     ),
@@ -102,11 +104,11 @@ class DashboardView extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: _CountPill(label: 'Paid', count: paidCount, color: const Color(0xFF10B981))),
+                    Expanded(child: _CountPill(label: 'Paid', count: paidCount, color: AppColors.success(brightness))),
                     const SizedBox(width: 8),
-                    Expanded(child: _CountPill(label: 'Unpaid', count: unpaidCount, color: const Color(0xFFF59E0B))),
+                    Expanded(child: _CountPill(label: 'Unpaid', count: unpaidCount, color: AppColors.warning(brightness))),
                     const SizedBox(width: 8),
-                    Expanded(child: _CountPill(label: 'Overdue', count: overdueCount, color: Colors.red[700]!)),
+                    Expanded(child: _CountPill(label: 'Overdue', count: overdueCount, color: AppColors.danger(brightness))),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -190,7 +192,7 @@ class _RevenueBarChart extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   toY: monthlyTotals[i].total,
-                  color: const Color(0xFF005A36),
+                  color: AppColors.primary,
                   width: 22,
                   borderRadius: BorderRadius.circular(4),
                 ),

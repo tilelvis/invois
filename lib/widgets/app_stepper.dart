@@ -16,7 +16,6 @@ class AppStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
@@ -38,10 +37,10 @@ class AppStepper extends StatelessWidget {
                       height: 36,
                       decoration: BoxDecoration(
                         color: isCompleted
-                            ? AppColors.secondary
+                            ? AppColors.brandAccent
                             : isActive
                                 ? AppColors.primary
-                                : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                                : AppColors.border(theme.brightness),
                         shape: BoxShape.circle,
                         boxShadow: isActive
                             ? [
@@ -68,7 +67,7 @@ class AppStepper extends StatelessWidget {
                                   style: TextStyle(
                                     color: (isActive || isCompleted)
                                         ? Colors.white
-                                        : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                        : AppColors.textSecondary(theme.brightness),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
@@ -86,8 +85,8 @@ class AppStepper extends StatelessWidget {
                           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: isCompleted
-                                ? AppColors.secondary
-                                : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                                ? AppColors.brandAccent
+                                : AppColors.border(theme.brightness),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -117,8 +116,8 @@ class AppStepper extends StatelessWidget {
                       color: isActive
                           ? AppColors.primary
                           : isCompleted
-                              ? AppColors.secondary
-                              : (isDark ? Colors.grey[500] : Colors.grey[600]),
+                              ? AppColors.brandAccent
+                              : AppColors.textSecondary(theme.brightness),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

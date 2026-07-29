@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/invoices_list_provider.dart';
 import '../services/pdf_service.dart';
+import '../widgets/app_design_system.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/invoice_action_sheet.dart';
 import '../widgets/shimmer_loading.dart';
@@ -132,12 +133,13 @@ class _InvoicesListViewState extends ConsumerState<InvoicesListView> {
                     itemBuilder: (context, index) {
                       final invoice = filtered[index];
                       final isPaid = invoice.status == InvoiceStatus.paid;
+                      final brightness = Theme.of(context).brightness;
 
                       return Dismissible(
                         key: ValueKey(invoice.id),
                         direction: DismissDirection.horizontal,
                         background: Container(
-                          color: const Color(0xFF10B981),
+                          color: AppColors.success(brightness),
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.only(left: 20),
                           child: Row(
@@ -149,7 +151,7 @@ class _InvoicesListViewState extends ConsumerState<InvoicesListView> {
                           ),
                         ),
                         secondaryBackground: Container(
-                          color: Colors.red[700],
+                          color: AppColors.danger(brightness),
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.only(right: 20),
                           child: const Icon(Icons.delete, color: Colors.white),
@@ -226,6 +228,7 @@ class _InvoicesListViewState extends ConsumerState<InvoicesListView> {
   }
 
   Future<bool> _confirmDelete(BuildContext context) async {
+    final danger = AppColors.danger(Theme.of(context).brightness);
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -235,7 +238,7 @@ class _InvoicesListViewState extends ConsumerState<InvoicesListView> {
           TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: danger)),
           ),
         ],
       ),
