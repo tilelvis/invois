@@ -235,7 +235,6 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
   Widget build(BuildContext context) {
     final invoiceState = ref.watch(invoiceProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final brightness = Theme.of(context).brightness;
 
     if (_invoiceSavedSuccessfully) {
       return SuccessScreen(
@@ -1087,7 +1086,6 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final brightness = Theme.of(context).brightness;
 
     return Container(
