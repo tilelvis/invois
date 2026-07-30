@@ -6,6 +6,7 @@ import 'clients_view.dart';
 import 'dashboard_view.dart';
 import 'invoice_form_view.dart';
 import 'invoices_list_view.dart';
+import 'products_view.dart';
 import 'settings_view.dart';
 
 class MainTabView extends ConsumerStatefulWidget {
@@ -27,6 +28,7 @@ class _MainTabViewState extends ConsumerState<MainTabView> {
         const InvoicesListView(),
         const InvoiceFormView(),
         const ClientsView(),
+        const ProductsView(),
         const SettingsView(),
       ];
 

@@ -1,6 +1,12 @@
 /// Enum to distinguish billing types specifically needed for Contractors/Electricians.
 enum ItemType { labor, material }
 
+/// Enum to distinguish the three kinds of stock ledger entries (feature 001).
+/// `adjustment` is a direct set of on-hand quantity (correcting a physical
+/// count), kept distinct from ordinary `restock`/`reduction` movements so the
+/// history reads clearly (FR-008).
+enum StockMovementType { restock, reduction, adjustment }
+
 /// Enum to map standard Kenyan KRA VAT categories.
 enum VatCategory {
   standard16, // 16% VAT
@@ -278,6 +284,199 @@ class Invoice {
       etimsInvoiceNumber: json['etimsInvoiceNumber'] as String?,
       isEtimsValidated: json['isEtimsValidated'] as bool? ?? false,
       isPaid: json['isPaid'] as bool? ?? false,
+    );
+  }
+}
+
+// ==========================================
+// 5. PRODUCT MODEL (Feature 001 — Products & Inventory)
+// ==========================================
+class Product {
+  final String id;
+  final String name;
+  final String? sku; // optional, unique across the catalog when present (FR-003)
+  final String unit; // free text, e.g. "pcs", "kg", "litre"
+  final double costPrice;
+  final double sellingPrice;
+  final VatCategory vatCategory;
+  final String category; // free text tag, used for filtering (FR-005)
+  final int? reorderThreshold; // optional; null = never flagged low-stock (FR-012)
+
+  /// Derived/cached on-hand quantity — always equal to the `resultingOnHand`
+  /// of this product's most recent [StockMovement], or 0 if none exist yet.
+  /// Not directly editable from the product form; only [StorageService]'s
+  /// stock-movement recording path is allowed to change it (see data-model.md
+  /// invariants).
+  final int onHandQuantity;
+
+  Product({
+    required this.id,
+    required this.name,
+    this.sku,
+    required this.unit,
+    required this.costPrice,
+    required this.sellingPrice,
+    this.vatCategory = VatCategory.exempt,
+    this.category = '',
+    this.reorderThreshold,
+    this.onHandQuantity = 0,
+  }) {
+    _validate();
+  }
+
+  void _validate() {
+    if (name.trim().isEmpty) {
+      throw ArgumentError('Product name is required.');
+    }
+    if (unit.trim().isEmpty) {
+      throw ArgumentError('Product unit is required (e.g. "pcs", "kg", "litre").');
+    }
+    if (costPrice < 0) {
+      throw ArgumentError('Cost price cannot be negative.');
+    }
+    if (sellingPrice < 0) {
+      throw ArgumentError('Selling price cannot be negative.');
+    }
+    if (reorderThreshold != null && reorderThreshold! < 0) {
+      throw ArgumentError('Reorder threshold cannot be negative.');
+    }
+  }
+
+  /// Whether this product is flagged low-stock per FR-012. Always false when
+  /// no reorder threshold has been configured.
+  bool get isLowStock => reorderThreshold != null && onHandQuantity <= reorderThreshold!;
+
+  /// This product's contribution to total inventory valuation (FR-013).
+  double get stockValue => onHandQuantity * costPrice;
+
+  Product copyWith({
+    String? id,
+    String? name,
+    String? sku,
+    bool clearSku = false,
+    String? unit,
+    double? costPrice,
+    double? sellingPrice,
+    VatCategory? vatCategory,
+    String? category,
+    int? reorderThreshold,
+    bool clearReorderThreshold = false,
+    int? onHandQuantity,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      sku: clearSku ? null : (sku ?? this.sku),
+      unit: unit ?? this.unit,
+      costPrice: costPrice ?? this.costPrice,
+      sellingPrice: sellingPrice ?? this.sellingPrice,
+      vatCategory: vatCategory ?? this.vatCategory,
+      category: category ?? this.category,
+      reorderThreshold: clearReorderThreshold ? null : (reorderThreshold ?? this.reorderThreshold),
+      onHandQuantity: onHandQuantity ?? this.onHandQuantity,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'sku': sku,
+      'unit': unit,
+      'costPrice': costPrice,
+      'sellingPrice': sellingPrice,
+      'vatCategory': vatCategory.name,
+      'category': category,
+      'reorderThreshold': reorderThreshold,
+      'onHandQuantity': onHandQuantity,
+    };
+  }
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      sku: json['sku'] as String?,
+      unit: json['unit'] as String,
+      costPrice: (json['costPrice'] as num).toDouble(),
+      sellingPrice: (json['sellingPrice'] as num).toDouble(),
+      vatCategory: VatCategory.values.byName(json['vatCategory'] as String),
+      category: json['category'] as String? ?? '',
+      reorderThreshold: json['reorderThreshold'] as int?,
+      onHandQuantity: json['onHandQuantity'] as int? ?? 0,
+    );
+  }
+}
+
+/// FR-003: Returns the existing product that conflicts on SKU with
+/// [candidate], or null if there is no conflict. A product is never
+/// considered to conflict with itself (matched by [Product.id]), which is
+/// what makes editing a product's own SKU possible. Blank/null SKUs never
+/// conflict — SKU is optional and only enforced unique when present.
+///
+/// Kept as a standalone pure function (rather than inline in the storage
+/// layer) so the conflict rule itself is unit-testable without touching Isar.
+Product? findProductSkuConflict(List<Product> existingProducts, Product candidate) {
+  final candidateSku = candidate.sku?.trim();
+  if (candidateSku == null || candidateSku.isEmpty) return null;
+
+  for (final existing in existingProducts) {
+    if (existing.id == candidate.id) continue;
+    final existingSku = existing.sku?.trim();
+    if (existingSku != null && existingSku.isNotEmpty && existingSku.toLowerCase() == candidateSku.toLowerCase()) {
+      return existing;
+    }
+  }
+  return null;
+}
+
+// ==========================================
+// 6. STOCK MOVEMENT MODEL (Feature 001 — Products & Inventory)
+// ==========================================
+class StockMovement {
+  final String id;
+  final String productId;
+  final StockMovementType type;
+  final int quantityDelta; // signed for restock/reduction; for adjustment, the delta implied by the new total
+  final int resultingOnHand; // on-hand immediately after this movement — makes history self-verifying (SC-003)
+  final String? note;
+  final DateTime timestamp;
+
+  StockMovement({
+    required this.id,
+    required this.productId,
+    required this.type,
+    required this.quantityDelta,
+    required this.resultingOnHand,
+    this.note,
+    required this.timestamp,
+  }) {
+    if (resultingOnHand < 0) {
+      throw ArgumentError('Resulting on-hand quantity cannot be negative once confirmed.');
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'productId': productId,
+      'type': type.name,
+      'quantityDelta': quantityDelta,
+      'resultingOnHand': resultingOnHand,
+      'note': note,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
+
+  factory StockMovement.fromJson(Map<String, dynamic> json) {
+    return StockMovement(
+      id: json['id'] as String,
+      productId: json['productId'] as String,
+      type: StockMovementType.values.byName(json['type'] as String),
+      quantityDelta: json['quantityDelta'] as int,
+      resultingOnHand: json['resultingOnHand'] as int,
+      note: json['note'] as String?,
+      timestamp: DateTime.parse(json['timestamp'] as String),
     );
   }
 }

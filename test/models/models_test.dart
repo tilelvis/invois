@@ -186,4 +186,167 @@ void main() {
       expect(decoded.isEtimsValidated, true);
     });
   });
+
+  group('Product Serialization (Feature 001)', () {
+    test('toJson/fromJson round trip preserves all fields', () {
+      final product = Product(
+        id: 'prod-1',
+        name: 'Bag of Cement 50kg',
+        sku: 'CEM-50',
+        unit: 'bag',
+        costPrice: 650.0,
+        sellingPrice: 800.0,
+        vatCategory: VatCategory.standard16,
+        category: 'Building materials',
+        reorderThreshold: 10,
+        onHandQuantity: 42,
+      );
+
+      final decoded = Product.fromJson(product.toJson());
+
+      expect(decoded.id, 'prod-1');
+      expect(decoded.name, 'Bag of Cement 50kg');
+      expect(decoded.sku, 'CEM-50');
+      expect(decoded.unit, 'bag');
+      expect(decoded.costPrice, 650.0);
+      expect(decoded.sellingPrice, 800.0);
+      expect(decoded.vatCategory, VatCategory.standard16);
+      expect(decoded.category, 'Building materials');
+      expect(decoded.reorderThreshold, 10);
+      expect(decoded.onHandQuantity, 42);
+    });
+
+    test('round trip preserves null sku and null reorderThreshold', () {
+      final product = Product(
+        id: 'prod-2',
+        name: 'Consulting Hour',
+        unit: 'hour',
+        costPrice: 0,
+        sellingPrice: 2500,
+      );
+
+      final decoded = Product.fromJson(product.toJson());
+
+      expect(decoded.sku, isNull);
+      expect(decoded.reorderThreshold, isNull);
+      expect(decoded.onHandQuantity, 0);
+      expect(decoded.category, '');
+    });
+
+    test('rejects blank name', () {
+      expect(
+        () => Product(id: 'p', name: '   ', unit: 'pcs', costPrice: 1, sellingPrice: 1),
+        throwsArgumentError,
+      );
+    });
+
+    test('rejects negative cost or selling price', () {
+      expect(
+        () => Product(id: 'p', name: 'X', unit: 'pcs', costPrice: -1, sellingPrice: 1),
+        throwsArgumentError,
+      );
+      expect(
+        () => Product(id: 'p', name: 'X', unit: 'pcs', costPrice: 1, sellingPrice: -1),
+        throwsArgumentError,
+      );
+    });
+
+    test('isLowStock is true only when a threshold is set and reached', () {
+      final noThreshold = Product(id: 'p1', name: 'X', unit: 'pcs', costPrice: 1, sellingPrice: 1, onHandQuantity: 0);
+      final aboveThreshold =
+          Product(id: 'p2', name: 'X', unit: 'pcs', costPrice: 1, sellingPrice: 1, reorderThreshold: 5, onHandQuantity: 10);
+      final atThreshold =
+          Product(id: 'p3', name: 'X', unit: 'pcs', costPrice: 1, sellingPrice: 1, reorderThreshold: 5, onHandQuantity: 5);
+
+      expect(noThreshold.isLowStock, false);
+      expect(aboveThreshold.isLowStock, false);
+      expect(atThreshold.isLowStock, true);
+    });
+  });
+
+  group('findProductSkuConflict (FR-003)', () {
+    test('returns null when no other product shares the SKU', () {
+      final existing = [
+        Product(id: 'p1', name: 'A', sku: 'SKU-1', unit: 'pcs', costPrice: 1, sellingPrice: 1),
+      ];
+      final candidate = Product(id: 'p2', name: 'B', sku: 'SKU-2', unit: 'pcs', costPrice: 1, sellingPrice: 1);
+
+      expect(findProductSkuConflict(existing, candidate), isNull);
+    });
+
+    test('returns the conflicting product when SKUs match (case-insensitive)', () {
+      final other = Product(id: 'p1', name: 'A', sku: 'sku-1', unit: 'pcs', costPrice: 1, sellingPrice: 1);
+      final candidate = Product(id: 'p2', name: 'B', sku: 'SKU-1', unit: 'pcs', costPrice: 1, sellingPrice: 1);
+
+      expect(findProductSkuConflict([other], candidate)?.id, 'p1');
+    });
+
+    test('a product never conflicts with itself when editing', () {
+      final self = Product(id: 'p1', name: 'A', sku: 'SKU-1', unit: 'pcs', costPrice: 1, sellingPrice: 1);
+      final editedSelf = Product(id: 'p1', name: 'A renamed', sku: 'SKU-1', unit: 'pcs', costPrice: 1, sellingPrice: 1);
+
+      expect(findProductSkuConflict([self], editedSelf), isNull);
+    });
+
+    test('blank/null SKUs never conflict', () {
+      final existing = [
+        Product(id: 'p1', name: 'A', unit: 'pcs', costPrice: 1, sellingPrice: 1),
+        Product(id: 'p2', name: 'B', sku: '', unit: 'pcs', costPrice: 1, sellingPrice: 1),
+      ];
+      final candidate = Product(id: 'p3', name: 'C', unit: 'pcs', costPrice: 1, sellingPrice: 1);
+
+      expect(findProductSkuConflict(existing, candidate), isNull);
+    });
+  });
+
+  group('StockMovement Serialization (Feature 001)', () {
+    test('toJson/fromJson round trip preserves all fields', () {
+      final movement = StockMovement(
+        id: 'mov-1',
+        productId: 'prod-1',
+        type: StockMovementType.restock,
+        quantityDelta: 20,
+        resultingOnHand: 62,
+        note: 'Delivery from supplier',
+        timestamp: DateTime(2026, 7, 30, 9, 15),
+      );
+
+      final decoded = StockMovement.fromJson(movement.toJson());
+
+      expect(decoded.id, 'mov-1');
+      expect(decoded.productId, 'prod-1');
+      expect(decoded.type, StockMovementType.restock);
+      expect(decoded.quantityDelta, 20);
+      expect(decoded.resultingOnHand, 62);
+      expect(decoded.note, 'Delivery from supplier');
+      expect(decoded.timestamp, DateTime(2026, 7, 30, 9, 15));
+    });
+
+    test('round trip preserves a null note', () {
+      final movement = StockMovement(
+        id: 'mov-2',
+        productId: 'prod-1',
+        type: StockMovementType.adjustment,
+        quantityDelta: -3,
+        resultingOnHand: 59,
+        timestamp: DateTime(2026, 7, 30),
+      );
+
+      expect(StockMovement.fromJson(movement.toJson()).note, isNull);
+    });
+
+    test('rejects a negative resultingOnHand', () {
+      expect(
+        () => StockMovement(
+          id: 'mov-3',
+          productId: 'prod-1',
+          type: StockMovementType.reduction,
+          quantityDelta: -10,
+          resultingOnHand: -1,
+          timestamp: DateTime(2026, 7, 30),
+        ),
+        throwsArgumentError,
+      );
+    });
+  });
 }
