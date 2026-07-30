@@ -69,7 +69,15 @@ jobs:
         shell: bash
         run: |
           NAME=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1)
-          CODE=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f2)
+          # Build number (Android versionCode) is derived from the CI run
+          # number, NOT from pubspec.yaml's "+N" suffix. That suffix requires
+          # a human to remember to bump it every release, and history shows
+          # that doesn't reliably happen (v1.0.1 and v1.1.0 both shipped as
+          # "+1" — identical versionCode — which is why devices couldn't
+          # install the update: Android refuses a same-or-lower versionCode
+          # regardless of the version *name* changing). github.run_number
+          # always increases, so this can't regress the same way again.
+          CODE="${{ github.run_number }}"
 
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
