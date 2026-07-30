@@ -3,6 +3,9 @@ name: Regenerate Isar Codegen
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   regenerate:
     runs-on: ubuntu-latest
