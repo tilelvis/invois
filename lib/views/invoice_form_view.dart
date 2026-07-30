@@ -10,6 +10,7 @@ import '../providers/invoices_list_provider.dart';
 import '../services/pdf_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/app_design_system.dart';
+import '../widgets/app_keypad.dart';
 import '../widgets/app_stepper.dart';
 
 // Ensure the class name is precisely InvoiceFormView to preserve routing from MainTabView.
@@ -1191,12 +1192,26 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
                   Expanded(
                     child: TextFormField(
                       controller: _priceController,
-                      onChanged: (val) => _calculateRealtimeTotals(),
+                      readOnly: true,
+                      onTap: () async {
+                        final result = await showModalBottomSheet<double>(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) => AmountEntrySheet(
+                            label: 'Unit Price',
+                            initialValue: _priceController.text,
+                          ),
+                        );
+                        if (result != null) {
+                          _priceController.text =
+                              result % 1 == 0 ? result.toInt().toString() : result.toString();
+                          _calculateRealtimeTotals();
+                        }
+                      },
                       decoration: const InputDecoration(
                         labelText: 'Unit Price *',
                         prefixText: 'KES ',
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) return 'Required';
                         final doubleVal = double.tryParse(value);
