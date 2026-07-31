@@ -24,6 +24,7 @@ class InvoiceFormView extends ConsumerStatefulWidget {
 class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
   int _currentStep = 0;
   bool _invoiceSavedSuccessfully = false;
+  bool _showOptionalCustomerFields = false;
 
   // Step 1 Controllers
   final _customerFormKey = GlobalKey<FormState>();
@@ -270,15 +271,17 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'INVOIS KENYA',
-          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2, color: Colors.white),
+          'New Invoice',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.white),
         ),
+        toolbarHeight: 44,
         backgroundColor: AppColors.primary,
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
             tooltip: 'Reset Wizard',
+            iconSize: 20,
             onPressed: () {
               ref.read(invoiceProvider.notifier).reset();
               _clearFormFields();
@@ -385,6 +388,30 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
                     ],
                   ),
                   const Divider(height: 24),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    onTap: () => setState(() => _showOptionalCustomerFields = !_showOptionalCustomerFields),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _showOptionalCustomerFields,
+                            activeColor: AppColors.primary,
+                            onChanged: (checked) =>
+                                setState(() => _showOptionalCustomerFields = checked ?? false),
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Add email, KRA PIN or notes (optional)',
+                              style: TextStyle(fontSize: 13, color: AppColors.textSecondary(brightness)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
                   TextFormField(
                     controller: _clientNameController,
                     onChanged: (val) => setState(() {}),
@@ -413,41 +440,52 @@ class _InvoiceFormViewState extends ConsumerState<InvoiceFormView> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _clientEmailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Optional Email Address',
-                      prefixIcon: Icon(Icons.mail_outline),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _clientPinController,
-                    onChanged: (val) => setState(() {}),
-                    decoration: const InputDecoration(
-                      labelText: 'Optional KRA PIN (e.g. A123456789B)',
-                      prefixIcon: Icon(Icons.badge_outlined),
-                    ),
-                    textCapitalization: TextCapitalization.characters,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) return null;
-                      final kraRegExp = RegExp(r'^[A-Za-z]\d{9}[A-Za-z]$');
-                      if (!kraRegExp.hasMatch(value.trim())) {
-                        return 'Invalid KRA PIN format (e.g. A123456789B)';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  TextFormField(
-                    controller: _clientNotesController,
-                    maxLines: 2,
-                    decoration: const InputDecoration(
-                      labelText: 'Optional Customer Notes',
-                      prefixIcon: Icon(Icons.edit_note),
-                    ),
+                  AnimatedSize(
+                    duration: AppAnimation.fast,
+                    curve: Curves.easeOut,
+                    child: !(_showOptionalCustomerFields || _clientPinController.text.trim().isNotEmpty)
+                        ? const SizedBox(width: double.infinity)
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const SizedBox(height: AppSpacing.md),
+                              TextFormField(
+                                controller: _clientEmailController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Optional Email Address',
+                                  prefixIcon: Icon(Icons.mail_outline),
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              TextFormField(
+                                controller: _clientPinController,
+                                onChanged: (val) => setState(() {}),
+                                decoration: const InputDecoration(
+                                  labelText: 'Optional KRA PIN (e.g. A123456789B)',
+                                  prefixIcon: Icon(Icons.badge_outlined),
+                                ),
+                                textCapitalization: TextCapitalization.characters,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) return null;
+                                  final kraRegExp = RegExp(r'^[A-Za-z]\d{9}[A-Za-z]$');
+                                  if (!kraRegExp.hasMatch(value.trim())) {
+                                    return 'Invalid KRA PIN format (e.g. A123456789B)';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              TextFormField(
+                                controller: _clientNotesController,
+                                maxLines: 2,
+                                decoration: const InputDecoration(
+                                  labelText: 'Optional Customer Notes',
+                                  prefixIcon: Icon(Icons.edit_note),
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ],
               ),
