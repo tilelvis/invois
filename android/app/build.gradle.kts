@@ -64,6 +64,18 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+
+            // R8 code shrinking + resource shrinking. Required by Play Store's
+            // recommended app-size guidance and generally expected for a
+            // production AAB submission. Flutter's own engine/plugin AARs ship
+            // their own consumer ProGuard rules (merged automatically), so
+            // proguard-rules.pro only needs to cover anything App-specific.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

@@ -89,6 +89,23 @@ jobs:
             --build-name=${{ steps.version.outputs.name }} \
             --build-number=${{ steps.version.outputs.code }}
 
+      - name: Build Release AAB
+        # AAB (Android App Bundle) is what Play Store requires for
+        # submission — it is NOT directly installable/side-loadable, so it's
+        # kept as a workflow artifact only, not attached to the GitHub
+        # Release (which stays APK-only, for direct install).
+        run: |
+          flutter build appbundle \
+            --release \
+            --build-name=${{ steps.version.outputs.name }} \
+            --build-number=${{ steps.version.outputs.code }}
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: invois-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
       - name: Rename APK
         run: |
           mkdir -p build/app/outputs/flutter-apk/renamed
